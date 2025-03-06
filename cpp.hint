@@ -1,0 +1,4 @@
+// https://go.microsoft.com/fwlink/?linkid=865984
+#define DEF_PVF(ret, name, __VA_ARGS__) virtual ret __fastcall name(__VA_ARGS__) = 0
+#define DEF_VFT(ret, name, ...) ret (__fastcall* name)(__VA_ARGS__)
+#define DEF_VFT_IMPL(ret, name, __VA_ARGS__) DEF_VFT(ret, name, i_game_manager* This, __VA_ARGS__)
