@@ -7,7 +7,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(WRAPPER_NAME WTSAPI32)
 
 # set compiler options
-add_compile_options("/utf-8")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options("-finput-charset=utf-8" "-fexec-charset=utf-8")
+else()
+    add_compile_options("/utf-8")
+endif()
 add_compile_definitions(WRAPPER_NAME=${WRAPPER_NAME} PROJECT_NAME=${PROJECT_NAME})
 
 # set dependencies directories
