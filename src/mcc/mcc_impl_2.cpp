@@ -24,30 +24,40 @@ s_game_globals_states g_game_globals_states {
 	},
 };
 
-constexpr const char* module_names[] = {
-	"halo1.dll",
-	"halo2.dll",
-	"halo3.dll",
-	"halo4.dll",
-	"groundhog.dll",
-	"halo3odst.dll",
-	"haloreach.dll",
+constexpr HMODULE* module_handles[] = {
+	&libmcc::halo1::hModule,
+	&libmcc::halo2::hModule,
+	&libmcc::halo3::hModule,
+	&libmcc::halo4::hModule,
+	&libmcc::groundhog::hModule,
+	&libmcc::halo3odst::hModule,
+	&libmcc::haloreach::hModule,
 };
 
 static void game_globals_state_launch_update(s_game_globals* game_globals) {
-	auto globlas = (mcc::s_game_globals*)game_globals;
+	int state;
+	HMODULE hModule;
+	s_game_options* options;
+	e_module module;
 
-	if (*globlas->state() == 11) {
-		event_queue_manager()->clear();
+	if (mcc_manager()->is_winstore()) {
+		auto globals = reinterpret_cast<mccwinstore::s_game_globals*>(game_globals);
+		state = *globals->state();
+		hModule = globals->current_module_handle;
+		options = &globals->options;
+		module = globals->current_module;
+	} else {
+		auto globals = reinterpret_cast<mcc::s_game_globals*>(game_globals);
+		state = *globals->state();
+		hModule = globals->current_module_handle;
+		options = &globals->options;
+		module = globals->current_module;
+	}
 
-
-		auto module = globlas->data.current_module;
-
-		auto hModule = GetModuleHandleA(module_names[globlas->data.current_module]);
-
+	if (state == 11) {
 		ASSERT(hModule != nullptr, "Game module handle is nullptr!");
 
-		auto options = &globlas->data.options;
+		*module_handles[module] = hModule;
 
 		// Set game state
 		{
@@ -59,15 +69,6 @@ static void game_globals_state_launch_update(s_game_globals* game_globals) {
 		}
 
 		module_manager()->get(module)->initialize(hModule);
-
-		switch (module) {
-		case _module_halo3: {
-			halo3::Initialize(hModule);
-			break;
-		}
-		default:
-			break;
-		}
 	}
 
 	if (g_game_globals_states_original.update[_game_globals_state_launch])
@@ -83,6 +84,16 @@ static void game_globals_state_start_update(s_game_globals* game_globals) {
 }
 
 static void game_globals_state_exit_enter(s_game_globals* game_globals) {
+	e_module module;
+
+	if (mcc_manager()->is_winstore()) {
+		auto globals = (mccwinstore::s_game_globals*)game_globals;
+		module = globals->current_module;
+	} else {
+		auto globals = (mcc::s_game_globals*)game_globals;
+		module = globals->current_module;
+	}
+
 	// Set game state
 	{
 		c_critical_section cs(_critical_section_mcc);
@@ -91,10 +102,6 @@ static void game_globals_state_exit_enter(s_game_globals* game_globals) {
 		mcc_manager()->set_game_mode(_game_mode_none);
 		mcc_manager()->set_is_theater(false);
 	}
-
-	auto globlas = (mcc::s_game_globals*)game_globals;
-
-	auto module = globlas->data.current_module;
 
 	module_manager()->get(module)->shutdown();
 

@@ -2,6 +2,7 @@
 
 #include <winnt.h>
 #include <winternl.h>
+#include <TlHelp32.h>
 
 #include "../common.h"
 
@@ -168,8 +169,46 @@ bool check_directory(const wchar_t* path, bool create_if_not_exist) {
 	}
 }
 
+std::vector<HANDLE> suspend_all_threads() {
+	std::vector<HANDLE> thread_handles;
+	DWORD current_thread_id = GetCurrentThreadId();
+	DWORD current_process_id = GetCurrentProcessId();
+
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (snapshot == INVALID_HANDLE_VALUE) {
+		return thread_handles;
+	}
+
+	THREADENTRY32 te;
+	te.dwSize = sizeof(THREADENTRY32);
+
+	if (Thread32First(snapshot, &te)) {
+		do {
+			if (te.th32OwnerProcessID == current_process_id && te.th32ThreadID != current_thread_id) {
+				HANDLE thread_handle = OpenThread(THREAD_SUSPEND_RESUME, FALSE, te.th32ThreadID);
+				if (thread_handle != NULL) {
+					SuspendThread(thread_handle);
+					thread_handles.push_back(thread_handle);
+				}
+			}
+		} while (Thread32Next(snapshot, &te));
+	}
+
+	CloseHandle(snapshot);
+	return thread_handles;
+}
+
+void resume_all_threads(const std::vector<HANDLE>& thread_handles) {
+	for (HANDLE thread_handle : thread_handles) {
+		ResumeThread(thread_handle);
+		CloseHandle(thread_handle);
+	}
+}
+
 HRESULT write_memory(void* dst, void* src, size_t size) {
 	DWORD old_protect;
+
+	auto thread_handles = suspend_all_threads();
 
 	auto result = VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &old_protect);
 
@@ -180,6 +219,8 @@ HRESULT write_memory(void* dst, void* src, size_t size) {
 	result = VirtualProtect(dst, size, old_protect, &old_protect);
 
 	ASSERT_HD(result, "Failed to close memory!");
+
+	resume_all_threads(thread_handles);
 
 	return S_OK;
 }

@@ -237,7 +237,8 @@ void* c_hook_manager::create(void* pTarget, void* pDetour, void** ppOriginal) {
         return nullptr;
     }
 
-	*ppOriginal = pOriginal;
+	if (ppOriginal)
+		*ppOriginal = pOriginal;
 
     return pTarget;
 }

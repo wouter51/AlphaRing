@@ -11,6 +11,7 @@ enum e_critical_section {
 	_critical_section_vftable,
 	_critical_section_mcc,
 	_critical_section_dollycam,
+	_critical_section_resize,
 
 	k_critical_section_count,
 	k_critical_section_none = -1,

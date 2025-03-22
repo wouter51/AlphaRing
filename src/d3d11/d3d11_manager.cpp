@@ -10,7 +10,7 @@ int c_d3d11_manager::initialize(){
 	ASSERT_HD(g_d3d11_module, "Failed to load d3d11!"); // impossible
 
 	// Get D3D11CreateDeviceAndSwapChain
-	g_D3D11CreateDeviceAndSwapChain = reinterpret_cast<decltype(g_D3D11CreateDeviceAndSwapChain)>(
+	g_D3D11CreateDeviceAndSwapChain = reinterpret_cast<t_D3D11CreateDeviceAndSwapChain>(
 		GetProcAddress(g_d3d11_module, "D3D11CreateDeviceAndSwapChain"));
 
 	ASSERT_HD(g_D3D11CreateDeviceAndSwapChain, "Failed to get D3D11CreateDeviceAndSwapChain!"); // impossible
@@ -68,15 +68,15 @@ int c_d3d11_manager::check_swap_chain(IDXGISwapChain* pSwapChain) {
 	m_device_vtbl->GetImmediateContext(m_device, &m_context);
 	m_context_vtbl = m_context->lpVtbl;
 
-	auto wireframe_hook = hook_manager()
-		->create(m_context_vtbl->DrawIndexed, g_context_vtbl.DrawIndexed, (void**)&g_context_vtbl_original.DrawIndexed);
+	//auto wireframe_hook = hook_manager()
+	//	->create(m_context_vtbl->DrawIndexed, g_context_vtbl.DrawIndexed, (void**)&g_context_vtbl_original.DrawIndexed);
 
-	auto result = hook_manager()
-		->enable(wireframe_hook);
+	//auto result = hook_manager()
+	//	->enable(wireframe_hook);
 
-	if (result != 0) {
-		LOG_WARN("Wireframe is not available.");
-	}
+	//if (result != 0) {
+	//	LOG_WARN("Wireframe is not available.");
+	//}
 
 	// Create Imgui Context
 	imgui_manager()->initialize();

@@ -7,6 +7,37 @@
 using namespace libmcc;
 using namespace libmcc::halo3;
 
+struct s_tag_cache {
+	s_tag_cache() {
+		header = &g_cache_file_globals()->header;
+		tag_cache_minimum_address = reinterpret_cast<int*>(physical_memory_globals()->allocation_base_address - k_tag_cache_minimum_address);
+	}
+
+	template<typename T>
+	std::initializer_list<T> get_tag_block(c_typed_tag_block<T> block) {
+		auto block_base_address = reinterpret_cast<T*>(tag_cache_minimum_address + block.address);
+		return std::initializer_list<T>(block_base_address, block_base_address + block.count);
+	}
+
+	template<typename T>
+	T* get_tag_reference(c_typed_tag_reference<T> reference) {
+		if (reference.index == -1) {
+			return nullptr;
+		}
+
+		auto element = header->tags_header->tag_instances.m_elements + reference.index;
+
+		if (element->address == 0) {
+			return nullptr;
+		}
+
+		return reinterpret_cast<T*>(tag_cache_minimum_address + element->address);
+	}
+
+	s_cache_file_header* header;
+	int* tag_cache_minimum_address;
+};
+
 namespace halo3 {
 	static void player_view_render(c_player_view* view);
 
@@ -36,10 +67,7 @@ namespace halo3 {
 				break;
 			}
 
-			set_tag_base_address(physical_memory_globals()->get_tag_base_address());
-
-			set_tag_instances(g_cache_file_globals()->header.tags_header->tag_instances.m_elements);
-
+			s_tag_cache tag_cache;
 			c_render_debug_line_drawer drawer;
 
 			if (g_halo3_options.debug_structure) {
@@ -49,19 +77,23 @@ namespace halo3 {
 
 				auto active_bsp_mask = tls->game_globals->active_structure_bsp_mask;
 
-				for (auto& structure_bsp_block : scnr->structure_bsps) {
+				for (auto& structure_bsp_block : tag_cache.get_tag_block(scnr->structure_bsps)) {
 					if ((active_bsp_mask & (1 << bsp_index++)) == 0) {
 						continue;
 					}
 
-					auto structure_bsp = structure_bsp_block.structure_bsp.get();
+					auto structure_bsp = tag_cache.get_tag_reference(structure_bsp_block.structure_bsp);
 
-					auto structure_bsp_resources = structure_bsp->resource_interface()->get_resources();
+					if (structure_bsp == nullptr) {
+						continue;
+					}
 
-					for (auto& collision_bsp : structure_bsp_resources->collision_bsp) {
-						auto vertices = collision_bsp.vertices.begin();
+					auto structure_bsp_resources = structure_bsp->resource_interface.get_resources();
 
-						for (auto& edge : collision_bsp.edges) {
+					for (auto& collision_bsp : tag_cache.get_tag_block(structure_bsp_resources->collision_bsp)) {
+						auto vertices = tag_cache.get_tag_block(collision_bsp.vertices).begin();
+
+						for (auto& edge : tag_cache.get_tag_block(collision_bsp.edges)) {
 							auto v0 = &vertices[edge.vertex_indices[0]].point;
 							auto v1 = &vertices[edge.vertex_indices[1]].point;
 
@@ -81,11 +113,11 @@ namespace halo3 {
 
 					auto bsp_index = visible_instance.structure_bsp_index;
 
-					auto bsp = (scnr->structure_bsps.begin() + bsp_index)->structure_bsp.get();
+					auto bsp = tag_cache.get_tag_reference((tag_cache.get_tag_block(scnr->structure_bsps).begin() + bsp_index)->structure_bsp);
 
-					auto instance = bsp->instanced_geometry_instances()->begin() + instance_index;
+					auto instance = tag_cache.get_tag_block(bsp->instanced_geometry_instances).begin() + instance_index;
 
-					auto instance_matrix = reinterpret_cast<real_matrix4x3*>(&instance->scale);
+					auto instance_matrix = reinterpret_cast<const real_matrix4x3*>(&instance->scale);
 
 					auto instance_definition_index = instance->instance_definition;
 
@@ -93,13 +125,13 @@ namespace halo3 {
 						continue;
 					}
 
-					auto bsp_resource = bsp->resource_interface()->get_resources();
+					auto bsp_resource = bsp->resource_interface.get_resources();
 
-					auto instance_definition = bsp_resource->instanced_geometries_definitions.begin() + instance_definition_index;
+					auto instance_definition = tag_cache.get_tag_block(bsp_resource->instanced_geometries_definitions).begin() + instance_definition_index;
 
-					auto vertices = instance_definition->vertices.begin();
+					auto vertices = tag_cache.get_tag_block(instance_definition->vertices).begin();
 
-					for (auto& edge : instance_definition->edges) {
+					for (auto& edge : tag_cache.get_tag_block(instance_definition->edges)) {
 						auto v0 = instance_matrix->transform(vertices[edge.vertex_indices[0]].point);
 						auto v1 = instance_matrix->transform(vertices[edge.vertex_indices[1]].point);
 

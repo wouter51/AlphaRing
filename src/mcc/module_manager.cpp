@@ -8,29 +8,25 @@ using namespace libmcc;
     static returnType (__fastcall* pDetour##_original)(...); \
     returnType __fastcall pDetour(__VA_ARGS__)
 
-Entry(void, halo3_process_game_engine_globals_messages) {
-	halo3_process_game_engine_globals_messages_original();
+#ifdef _DEBUG	
 
-	event_queue_manager()->process();
-}
+Entry(void, dsSTATE_MGR__SetState, libmcc::halo1::dsSTATE_MGR* This, int id, const libmcc::halo1::dsDATA* data) {
+	dsSTATE_MGR__SetState_original(This, id, data);
 
-int idIsMP = -1;
-
-Entry(int, RegisterState, void* a1, const char* id, bool isToggleEventOnChange) {
-	auto result = RegisterState_original(a1, id, isToggleEventOnChange);
-
-	if (id && strcmp("IsMP", id) == 0) {
-		idIsMP = result;
+	if (This->RegisterState("IsMP", true) == id) {
+		if (*reinterpret_cast<const bool*>(data->type->GetPtr(data)) == true) {
+			__debugbreak();
+		}
 	}
-
-	return result;
 }
 
-Entry(halo1::dsDATA*, GetState, void* a1, int id) {
-	auto result = GetState_original(a1, id);
+#endif
 
-	if (id == idIsMP) {
-		result->storage = false;
+Entry(halo1::dsDATA*, dsSTATE_MGR__GetState, libmcc::halo1::dsSTATE_MGR* This, int id) {
+	auto result = dsSTATE_MGR__GetState_original(This, id);
+
+	if (This->RegisterState("IsMP", true) == id) {
+		*(bool*)result->type->GetPtr(result) = false;
 	}
 
 	return result;
@@ -93,56 +89,54 @@ int s_module::shutdown() {
 }
 
 int ::c_module_manager::initialize() {
-	auto halo1 = get(_module_halo1);
+	for (int i = 0; i < libmcc::k_game_count; ++i) {
+		auto module = m_modules + i;
 
-	halo1->patches.emplace_back(0x67492, " EB 18");
-	halo1->patches.emplace_back(0x427978, " EB");
-	halo1->hooks.emplace_back(0x18B150, GetState, (void**)&GetState_original);
-	halo1->hooks.emplace_back(0x18ABA0, RegisterState, (void**)&RegisterState_original);
-
-
-	auto halo2 = get(_module_halo2);
-	halo2->patches.emplace_back(0x6A6C30, " 31 C0 B0 01 C3 90");
-	halo2->patches.emplace_back(0x893FDA, " 04");
-	halo2->patches.emplace_back(0x894037, " 04");
-	halo2->patches.emplace_back(0x5153E, " 83 F8 01 74 04");
-
-	auto halo3 = get(_module_halo3);
-	halo3->patches.emplace_back(0x11DF8, " 31 C0 C3 90");
-	halo3->patches.emplace_back(0x8AD160, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-	halo3->patches.emplace_back(0x8AD174, " 00 00 00 00 00 00 00 3F 00 00 80 3F 00 00 80 3F 01");
-	halo3->patches.emplace_back(0x8AD1B0, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-	halo3->hooks.emplace_back(0xB468, halo3_process_game_engine_globals_messages, (void**) & halo3_process_game_engine_globals_messages_original);
-	halo3->vftables.emplace_back(0x7FE970, (const void**) &::halo3::g_player_view_vftable, (void**)&::halo3::g_player_view_vftable_original, sizeof(::halo3::c_view_vftable<libmcc::halo3::c_view>));
-
-	auto halo4 = get(_module_halo4);
-	halo4->patches.emplace_back(0x566794, " 31 C0 C3 90");
-	halo4->patches.emplace_back(0x4E301B, " EB");
-	halo4->patches.emplace_back(0x3F5D7, " 90 90 90 90 90 90");
-	halo4->patches.emplace_back(0xE84E40, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-	halo4->patches.emplace_back(0xE84E54, " 00 00 00 00 00 00 00 3F 00 00 80 3F 00 00 80 3F 01");
-	halo4->patches.emplace_back(0xE84E90, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-
-	auto groundhog = get(_module_groundhog);
-	groundhog->patches.emplace_back(0x567E28, " 31 C0 C3 90");
-	groundhog->patches.emplace_back(0x4E4FAB, " EB");
-	groundhog->patches.emplace_back(0xE76560, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-	groundhog->patches.emplace_back(0xE76574, " 00 00 00 00 00 00 00 3F 00 00 80 3F 00 00 80 3F 01");
-	groundhog->patches.emplace_back(0xE765B0, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-
-	auto halo3odst = get(_module_halo3odst);
-	halo3odst->patches.emplace_back(0x1258C, " 31 C0 C3 90");
-	halo3odst->patches.emplace_back(0x8F1FC0, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-	halo3odst->patches.emplace_back(0x8F1FD4, " 00 00 00 00 00 00 00 3F 00 00 80 3F 00 00 80 3F 01");
-	halo3odst->patches.emplace_back(0x8F2010, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-
-	auto haloreach = get(_module_haloreach);
-	haloreach->patches.emplace_back(0x3971C4, " 31 C0 C3 90");
-	haloreach->patches.emplace_back(0x39489C, " EB");
-	haloreach->patches.emplace_back(0xB43D10, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-	haloreach->patches.emplace_back(0xB43D24, " 00 00 00 00 00 00 00 3F 00 00 80 3F 00 00 80 3F 01");
-	haloreach->patches.emplace_back(0xB43D60, " 00 00 00 00 00 00 00 00 00 00 80 3F 00 00 00 3F 01");
-
+		switch (i) {
+		case _module_halo1: {
+			module->patches.emplace_back(0x67492, " EB 18");
+			module->patches.emplace_back(0x427978, " EB");
+#ifdef _DEBUG	
+			module->hooks.emplace_back(libmcc::halo1::s_function_offset_table::dsSTATE_MGR__SetState.first, dsSTATE_MGR__SetState, (void**)&dsSTATE_MGR__SetState_original);
+#endif
+			module->hooks.emplace_back(libmcc::halo1::s_function_offset_table::dsSTATE_MGR__GetState.first, dsSTATE_MGR__GetState, (void**)&dsSTATE_MGR__GetState_original);
+			break;
+		}
+		case _module_halo2: {
+			module->patches.emplace_back(libmcc::halo2::s_function_offset_table::game_options_verify.first, " 31 C0 B0 01 C3 90");
+			module->patches.emplace_back(0x8940CA, " 04");
+			module->patches.emplace_back(0x894127, " 04");
+			module->patches.emplace_back(0x5153E, " 83 F8 01 74 04");
+			break;
+		}
+		case _module_halo3: {
+			module->patches.emplace_back(libmcc::halo3::s_function_offset_table::c_network_session__can_accept_any_join_request.first, "31 C0 C3 90");
+			break;
+		}
+		case _module_halo4: {
+			module->patches.emplace_back(0x56671C, " 31 C0 C3 90");
+			module->patches.emplace_back(0x4E311B, " EB");
+			module->patches.emplace_back(0x3F5D7, " 90 90 90 90 90 90");
+			break;
+		}
+		case _module_groundhog: {
+			module->patches.emplace_back(0x567DF0, " 31 C0 C3 90");
+			module->patches.emplace_back(0x4E50DB, " EB");
+			break;
+		}
+		case _module_halo3odst: {
+			module->patches.emplace_back(libmcc::halo3odst::s_function_offset_table::c_network_session__can_accept_any_join_request.first, "31 C0 C3 90");
+			break;
+		}
+		case _module_haloreach: {
+			module->patches.emplace_back(libmcc::haloreach::s_function_offset_table::c_network_session__can_accept_any_join_request.first, " 31 C0 C3 90");
+			module->patches.emplace_back(0x394A2C, " EB");
+			break;
+		}
+		default:
+			break;
+		}
+	}
 	return 0;
 }
 

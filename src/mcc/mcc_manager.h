@@ -2,6 +2,8 @@
 
 #include "../common.h"
 
+#include "./mcc_offset.h"
+
 #include <libmcc/libmcc.h>
 
 #define BASE_DIR TOSTRING(PROJECT_NAME)
@@ -31,6 +33,20 @@ public:
 	inline void set_game_state(libmcc::e_game_globals_state state) { m_game_state = state; }
 	inline void set_game_mode(libmcc::e_game_mode mode) { m_game_mode = mode; }
 	inline void set_is_theater(bool is_theater) { m_is_theater = is_theater; }
+
+	inline bool is_winstore() const { return m_mcc_module == libmcc::_module_mccwinstore; }
+
+	void get_user_by_xuid(void* This, libmcc::s_xdk_user* user, libmcc::XUID xuid) {
+		is_winstore() ? 
+			libmcc::mccwinstore::get_user_by_xuid(This, user, xuid) : 
+			libmcc::mcc::get_user_by_xuid(This, user, xuid);
+	}
+
+	template<typename T>
+	T* get_runtime_address(s_mcc_offset<T> offset) {
+		auto _offset = g_mcc_offset_table[is_winstore()][offset.offset];
+		return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(m_hModule) + _offset);
+	}
 
 private:
 	bool m_initialized;

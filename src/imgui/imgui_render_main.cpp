@@ -11,6 +11,7 @@
 using namespace libmcc;
 
 void c_imgui_render::main() {
+    char buffer[256];
     static bool show_demo = false;
     static bool show_splitscreen = false;
 	static bool show_game_engine = false;
@@ -19,10 +20,10 @@ void c_imgui_render::main() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("...")) {
             
-			auto wireframe = d3d11_manager()->get_wireframe();
+			/*auto wireframe = d3d11_manager()->get_wireframe();
             if (ImGui::MenuItem("WireFrame", nullptr, &wireframe)) {
 				d3d11_manager()->set_wireframe(wireframe);
-            }
+            }*/
 
             ImGui::MenuItem("ImGui Demo", nullptr, &show_demo);
 
@@ -30,7 +31,7 @@ void c_imgui_render::main() {
         }
         ImGui::MenuItem("GameEngine", nullptr, &show_game_engine);
         ImGui::MenuItem("Splitscreen", nullptr, &show_splitscreen);
-		ImGui::MenuItem("DollyCam", nullptr, &show_dollycam);
+		//ImGui::MenuItem("DollyCam", nullptr, &show_dollycam);
         ImGui::EndMainMenuBar();
     }
 
@@ -68,6 +69,27 @@ void c_imgui_render::main() {
             auto player = player_manager()->get_local_player_count();
             if (ImGui::SliderInt("Player", &player, 1, 4)) {
                 player_manager()->set_local_player_count(player);
+            }
+
+            for (int i = 0; i < k_local_player_count; ++i) {
+                sprintf(buffer, "Player %d", i);
+
+                int input_device = player_manager()->get_input_device(i);
+
+                if (!ImGui::BeginCombo(buffer, k_player_input_device_names[input_device])) {
+                    continue;
+                }
+
+                for (int j = 0; j < k_player_input_device_count - (i != 0); ++j) {
+                    bool selected = j == input_device;
+                    if (!ImGui::Selectable(k_player_input_device_names[j], &selected) || input_device == j) {
+                        continue;
+                    }
+
+                    player_manager()->set_input_device(i, static_cast<e_player_input_device>(j));
+                }
+
+                ImGui::EndCombo();
             }
         }
         ImGui::End();

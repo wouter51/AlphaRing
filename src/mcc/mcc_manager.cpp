@@ -7,6 +7,10 @@
 
 using namespace libmcc;
 
+static bool d3ddebug() {
+	return true;
+}
+
 int c_mcc_manager::initialize() {
 	if (m_initialized) {
 		return 0;
@@ -45,10 +49,8 @@ int c_mcc_manager::initialize() {
 
 	LOG_INFO("{}:[{}]", (int)m_mcc_module, m_version.to_string());
 
-	libmcc::mcc::Initialize(m_hModule);
-
 	// override game manager vftable
-	auto vftable = *reinterpret_cast<i_game_manager_vftable**>(libmcc::mcc::g_game_manager());
+	auto vftable = *get_runtime_address(g_mcc_offset_map.game_manager_vftable);
 
 	vftable_manager()->create(
 		vftable, 
@@ -57,6 +59,26 @@ int c_mcc_manager::initialize() {
 		(void**)&g_game_manager_vftable_original);
 
 	vftable_manager()->enable(vftable);
+
+	auto func = get_runtime_address(g_mcc_offset_map.set_player_input);
+
+	hook_manager()->create(
+		func,
+		(void*)&set_player_gamepad,
+		(void**)&set_player_gamepad_original
+	);
+
+	hook_manager()->enable(func);
+
+	auto addr = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_hModule) + 0x1102AD4);
+
+	hook_manager()->create(
+		addr,
+		(void*)d3ddebug,
+		nullptr
+	);
+
+	hook_manager()->enable(addr);
 
 	// Initialize the player manager
 	player_manager()->initialize();
@@ -73,8 +95,10 @@ int c_mcc_manager::initialize() {
 			continue;
 		}
 
+		auto game_globals_states = get_runtime_address(g_mcc_offset_map.game_globals_states);
+
 		auto result = vftable_manager()->create(
-			game_globals->game_globals_states(),
+			game_globals_states,
 			(const void**)&g_game_globals_states,
 			sizeof(s_game_globals_states),
 			(void**)&g_game_globals_states_original);

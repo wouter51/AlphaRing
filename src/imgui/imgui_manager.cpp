@@ -72,10 +72,10 @@ int c_imgui_manager::shutdown() {
 
 int c_imgui_manager::begin_frame() {
     critical_section_manager()->enter(_critical_section_imgui);
-    auto visibility = get_visibility();
+    m_cached_visibility = get_visibility();
     critical_section_manager()->leave(_critical_section_imgui);
 
-	if (visibility == false) {
+	if (m_cached_visibility == false) {
 		return 2;
 	}
 
@@ -87,11 +87,7 @@ int c_imgui_manager::begin_frame() {
 }
 
 int c_imgui_manager::end_frame() {
-    critical_section_manager()->enter(_critical_section_imgui);
-    auto visibility = get_visibility();
-    critical_section_manager()->leave(_critical_section_imgui);
-
-    if (visibility == false) {
+    if (m_cached_visibility == false) {
         return 2;
     }
 

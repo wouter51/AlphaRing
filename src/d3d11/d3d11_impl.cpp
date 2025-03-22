@@ -11,7 +11,7 @@ VODEF DrawIndexed(ID3D11DeviceContext* This, UINT IndexCount, UINT StartIndexLoc
 VODEF OMSetRenderTargets(ID3D11DeviceContext* This, UINT NumViews, ID3D11RenderTargetView* const* ppRenderTargetViews, ID3D11DepthStencilView* pDepthStencilView);
 
 ID3D11DeviceContextVtbl g_context_vtbl {
-	.DrawIndexed = DrawIndexed,
+	//.DrawIndexed = DrawIndexed,
 	//.OMSetRenderTargets = OMSetRenderTargets,
 };
 
