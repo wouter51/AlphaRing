@@ -70,16 +70,6 @@ int c_mcc_manager::initialize() {
 
 	hook_manager()->enable(func);
 
-	auto addr = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_hModule) + 0x1102AD4);
-
-	hook_manager()->create(
-		addr,
-		(void*)d3ddebug,
-		nullptr
-	);
-
-	hook_manager()->enable(addr);
-
 	// Initialize the player manager
 	player_manager()->initialize();
 

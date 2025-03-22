@@ -45,6 +45,12 @@ int c_player_manager::initialize_xuid() {
 
 	for (int i = 0; i < k_local_player_count; i++) {
 		m_xuids[i] = id.xuid + i;
+
+		if (i == 0) {
+			m_input_devices[0] = _player_input_device_km;
+		} else {
+			m_input_devices[i] = static_cast<e_player_input_device>(i - 1);
+		}
 	}
 
 	return 0;

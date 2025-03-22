@@ -208,8 +208,6 @@ void resume_all_threads(const std::vector<HANDLE>& thread_handles) {
 HRESULT write_memory(void* dst, void* src, size_t size) {
 	DWORD old_protect;
 
-	auto thread_handles = suspend_all_threads();
-
 	auto result = VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &old_protect);
 
 	ASSERT_HD(result, "Failed to open memory!");
@@ -219,8 +217,6 @@ HRESULT write_memory(void* dst, void* src, size_t size) {
 	result = VirtualProtect(dst, size, old_protect, &old_protect);
 
 	ASSERT_HD(result, "Failed to close memory!");
-
-	resume_all_threads(thread_handles);
 
 	return S_OK;
 }
