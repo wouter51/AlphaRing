@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 project(alpha_ring)
 
@@ -49,7 +49,6 @@ add_library(${WRAPPER_NAME} SHARED ${SRC})
 
 # use cinterface and disable d3d11 helpers
 target_compile_definitions(${WRAPPER_NAME} PUBLIC CINTERFACE D3D11_NO_HELPERS)
-target_compile_options(${WRAPPER_NAME} PRIVATE /wd4002 /wd4005)
 
 # link libraries
 target_link_libraries(${WRAPPER_NAME}
