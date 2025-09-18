@@ -3,7 +3,7 @@ project(alpha_ring)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(VERSION "1.3495.0.0")
+set(VERSION "1.3528.0.0")
 
 set(WRAPPER_NAME "WTSAPI32")
 set(WRAPPER_DLL_NAME "${WRAPPER_NAME}.dll")

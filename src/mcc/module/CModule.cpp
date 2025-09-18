@@ -64,9 +64,9 @@ static struct {
 }}, {nullptr, {
         {"splitscreen_patch1", "", OFFSET_GROUNDHOG_PF_COOP_JOIN, "\x31\xC0\xC3\x90", true},
         {"splitscreen_patch2", "", OFFSET_GROUNDHOG_PF_REJOIN, "\xEB", true},
-        {"Remove Black Bar1", "remove black bar", 0xE76560, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x3F\x00\x00\x00\x3F\x01", false},
-        {"Remove Black Bar2", "remove black bar", 0xE76574, "\x00\x00\x00\x00\x00\x00\x00\x3F\x00\x00\x80\x3F\x00\x00\x80\x3F\x01", false},
-        {"Remove Black Bar3", "remove black bar", 0xE765B0, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x3F\x00\x00\x00\x3F\x01", false},
+        {"Remove Black Bar1", "remove black bar", OFFSET_GROUNDHOG_BLACKBAR_1 , "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x3F\x00\x00\x00\x3F\x01", false},
+        {"Remove Black Bar2", "remove black bar", OFFSET_GROUNDHOG_BLACKBAR_2 , "\x00\x00\x00\x00\x00\x00\x00\x3F\x00\x00\x80\x3F\x00\x00\x80\x3F\x01", false},
+        {"Remove Black Bar3", "remove black bar", OFFSET_GROUNDHOG_BLACKBAR_3 , "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x3F\x00\x00\x00\x3F\x01", false},
 }}, {nullptr, {
         {"splitscreen_patch1", "", OFFSET_HALO3ODST_PF_COOP_JOIN, "\x31\xC0\xC3\x90", true},
         {"Remove Black Bar1", "remove black bar", 0x8F1FB0/*0x8F1FC0*/, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x3F\x00\x00\x00\x3F\x01", true},
