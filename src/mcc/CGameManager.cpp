@@ -30,7 +30,6 @@ CGameManager::FunctionTable CGameManager::ppOriginal;
 
 bool CGameManager::Initialize(CGameManager* mng) {
     pGameManager = mng;
-
     return AlphaRing::Hook::Detour({
         {pGameManager->table->get_player_profile, get_player_profile, (void**)&ppOriginal.get_player_profile},
         {pGameManager->table->get_key_state, get_key_state, (void**)&ppOriginal.get_key_state},

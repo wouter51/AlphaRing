@@ -3,7 +3,7 @@ project(alpha_ring)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(VERSION "1.3385.0.0")
+set(VERSION "1.3495.0.0")
 
 set(WRAPPER_NAME "WTSAPI32")
 set(WRAPPER_DLL_NAME "${WRAPPER_NAME}.dll")
@@ -47,13 +47,13 @@ set_target_properties(minhook PROPERTIES IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/li
 # utils
 file(GLOB_RECURSE UTILS_SRC ${CMAKE_SOURCE_DIR}/lib/utils/src/*.cpp)
 include_directories(${CMAKE_SOURCE_DIR}/lib/utils/inc)
-add_library(utils ${UTILS_SRC})
+add_library(utils ${UTILS_SRC} "lib/game/inc/1.3495.0.0/offset_groundhog.h" "lib/game/inc/1.3495.0.0/offset_halo1.h" "lib/game/inc/1.3495.0.0/offset_halo2.h" "lib/game/inc/1.3495.0.0/offset_halo3.h" "lib/game/inc/1.3495.0.0/offset_halo3odst.h" "lib/game/inc/1.3495.0.0/offset_halo4.h" "lib/game/inc/1.3495.0.0/offset_haloreach.h" "lib/game/inc/1.3495.0.0/offset_mcc.h")
 
 # game
 file(GLOB_RECURSE GAME_SRC ${CMAKE_SOURCE_DIR}/lib/game/src/*.cpp)
 include_directories(${CMAKE_SOURCE_DIR}/lib/game/inc)
 include_directories(${CMAKE_SOURCE_DIR}/lib/game/inc/${VERSION})
-add_library(game ${GAME_SRC})
+add_library(game ${GAME_SRC} "lib/game/inc/1.3495.0.0/offset_groundhog.h" "lib/game/inc/1.3495.0.0/offset_halo1.h" "lib/game/inc/1.3495.0.0/offset_halo2.h" "lib/game/inc/1.3495.0.0/offset_halo3.h" "lib/game/inc/1.3495.0.0/offset_halo3odst.h" "lib/game/inc/1.3495.0.0/offset_halo4.h" "lib/game/inc/1.3495.0.0/offset_haloreach.h" "lib/game/inc/1.3495.0.0/offset_mcc.h")
 
 # disable warning c4996
 add_definitions(-D_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
@@ -64,7 +64,7 @@ add_compile_definitions(GAME_VERSION="${VERSION}")
 
 file(GLOB_RECURSE CORE_SRC ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
-add_library(${WRAPPER_NAME} SHARED ${CORE_SRC})
+add_library(${WRAPPER_NAME} SHARED ${CORE_SRC} "lib/game/inc/1.3495.0.0/offset_groundhog.h" "lib/game/inc/1.3495.0.0/offset_halo1.h" "lib/game/inc/1.3495.0.0/offset_halo2.h" "lib/game/inc/1.3495.0.0/offset_halo3.h" "lib/game/inc/1.3495.0.0/offset_halo3odst.h" "lib/game/inc/1.3495.0.0/offset_halo4.h" "lib/game/inc/1.3495.0.0/offset_haloreach.h" "lib/game/inc/1.3495.0.0/offset_mcc.h")
 
 target_link_libraries(${WRAPPER_NAME} PUBLIC ${LIBRARY_LIST})
 

@@ -28,21 +28,35 @@ namespace AlphaRing::Hook {
 
         assertm(result, "failed to initialize minhook");
 
+		LOG_INFO("Initializing AlphaRing...");
+        LOG_INFO("Created by WinterSquire, updated by xTrxplex\n");
+		LOG_WARNING(" == This version only supports the steam version of the game ==");
+
         if ((hModule = (__int64)GetModuleHandleA("MCC-Win64-Shipping.exe")) != 0) {
             distro = Steam;
         } else if ((hModule = (__int64)GetModuleHandleA("MCCWinStore-Win64-Shipping.exe")) != 0) {
-            distro = WindowsStore;
+			distro = WindowsStore;
         } else {
             distro = None;
         }
 
         assertm(distro != None, "failed to get distro type");
 
+        LOG_INFO("Game Version[{}]: {}", IsWS() ? "Windows Store" : "Steam", GAME_VERSION);
+
         if ((version = FileVersion(hModule)) != FileVersion::fromString(GAME_VERSION)) {
+            if (distro == WindowsStore)
+            {
+				if ((version = FileVersion(hModule)) == FileVersion::fromString("1.3498.0.0"))
+					return true;
+            }
+
             sprintf(buffer, "Version mismatch [%s]:%s", GAME_VERSION, version.toString().c_str());
             MessageBoxA(nullptr, buffer, "Error", MB_OK);
             return false;
         }
+
+
 
         return true;
     }
@@ -96,6 +110,7 @@ namespace AlphaRing::Hook {
     }
 
     void Offset(const std::initializer_list<FunctionOffset> &offsets) {
+        int patch_count = 0;
         for (auto &offset : offsets) {
             if (offset.ppFunction == nullptr) continue;
             *offset.ppFunction = (void*)(hModule + (IsWS() ? offset.offset_ws : offset.offset_steam));

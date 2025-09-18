@@ -80,9 +80,12 @@ namespace AlphaRing::Render::ImGui {
 
 
         if (inGame && pGameGlobal != nullptr) {
-            auto context = pages[pGameGlobal->current_game];
-            if (context != nullptr)
-                context->render();
+            if (pGameGlobal->current_game != 0)
+            {
+                auto context = pages[pGameGlobal->current_game];
+                if (context != nullptr)
+                    context->render();
+            }
         }
 
         if (::ImGui::BeginMainMenuBar()) {

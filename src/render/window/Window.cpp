@@ -16,8 +16,9 @@ namespace AlphaRing::Render::Window {
 
     //todo: WM_IME_COMPOSITION Support
     static LRESULT dWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-        if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+        if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))        
             return true;
+        
 
         switch (uMsg) {
             case WM_KEYDOWN: {
@@ -31,8 +32,10 @@ namespace AlphaRing::Render::Window {
         }
 
         auto& io = ImGui::GetIO();
-        if (io.WantCaptureMouse)
-            return true;
+
+        if (io.WantCaptureMouse)        
+            if(AlphaRing::Global::Global()->show_imgui)
+                return true;        
 
         return CallWindowProc(oldWndProc, hWnd, uMsg, wParam, lParam);
     }
