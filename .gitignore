@@ -2,4 +2,22 @@ cmake-build-release/
 cmake-build-debug/
 .idea/
 build/
+build-*/
+out/
 /.vs
+
+# Case-sensitivity symlinks created by .devcontainer/fix-case.sh
+src/render/D3d11
+src/render/Window
+lib/imgui/lib/Release
+lib/imgui/lib/Debug
+lib/lua/lib/Release
+lib/lua/lib/Debug
+lib/minhook/lib/Release
+lib/minhook/lib/Debug
+lib/spdlog/lib/Release
+lib/spdlog/lib/Debug
+lib/tinyxml2/lib/Release
+lib/tinyxml2/lib/Debug
+lib/minhook/lib/release/libMinhook.x64.lib
+lib/minhook/lib/debug/libMinhook.x64.lib

@@ -34,17 +34,24 @@ namespace AlphaRing::Hook {
 
         if ((hModule = (__int64)GetModuleHandleA("MCC-Win64-Shipping.exe")) != 0) {
             distro = Steam;
+            LOG_INFO("Detected Steam distro, module base: {:x}", hModule);
         } else if ((hModule = (__int64)GetModuleHandleA("MCCWinStore-Win64-Shipping.exe")) != 0) {
 			distro = WindowsStore;
+            LOG_INFO("Detected Windows Store distro, module base: {:x}", hModule);
         } else {
             distro = None;
+            LOG_ERROR("Failed to find game executable module (neither Steam nor WinStore)");
         }
 
         assertm(distro != None, "failed to get distro type");
 
         LOG_INFO("Game Version[{}]: {}", IsWS() ? "Windows Store" : "Steam", GAME_VERSION);
 
-        if ((version = FileVersion(hModule)) != FileVersion::fromString(GAME_VERSION)) {
+        version = FileVersion(hModule);
+        LOG_INFO("Game file version: {}", version.toString());
+        LOG_INFO("Expected version: {}", GAME_VERSION);
+
+        if (version != FileVersion::fromString(GAME_VERSION)) {
             if (distro == WindowsStore)
             {
 				if ((version = FileVersion(hModule)) == FileVersion::fromString("1.3498.0.0"))
@@ -52,6 +59,7 @@ namespace AlphaRing::Hook {
             }
 
             sprintf(buffer, "Version mismatch [%s]:%s", GAME_VERSION, version.toString().c_str());
+            LOG_ERROR("Version mismatch: expected {}, got {}", GAME_VERSION, version.toString());
             MessageBoxA(nullptr, buffer, "Error", MB_OK);
             return false;
         }

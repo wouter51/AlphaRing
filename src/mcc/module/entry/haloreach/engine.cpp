@@ -5,13 +5,12 @@
 // todo: Scheduler
 namespace HaloReach::Entry::Engine {
     void Prologue() {
-        LOG_INFO("Engine Prologue");
         // open access to main thread resources
         // main thread resources will be copied to the render thread
-        HaloReach::Native::s_nativeInfo.update("haloreach.dll");
+        static __int64 hModule = (__int64)GetModuleHandleA("haloreach.dll");
+        HaloReach::Native::s_nativeInfo.update(hModule);
     }
     void Epilogue() {
-        LOG_INFO("Engine Epilogue");
     }
 
     HaloReachEntry(entry, OFFSET_HALOREACH_PF_ENGINE, void, detour) {

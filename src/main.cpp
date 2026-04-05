@@ -8,41 +8,69 @@
 static bool Initialize() {
     bool result;
 
+    AlphaRing::Log::Early("Initialize: starting...");
+
     result = AlphaRing::Log::Init();
 
-    assertm(result, "failed to initialize log");
+    if (!result) {
+        AlphaRing::Log::Early("Initialize: FAILED to init log");
+        return false;
+    }
 
+    AlphaRing::Log::Early("Initialize: log init done, testing LOG_INFO...");
+    LOG_INFO("Log initialized.");
+    AlphaRing::Log::Early("Initialize: LOG_INFO works");
+
+    AlphaRing::Log::Early("Initialize: calling Hook::Initialize...");
     result = AlphaRing::Hook::Initialize();
 
-    assertm(result, "failed to initialize hook");
+    if (!result) {
+        AlphaRing::Log::Early("Initialize: FAILED Hook::Initialize");
+        LOG_ERROR("Failed to initialize hook");
+        return false;
+    }
 
-    //LOG_INFO("Initialized AlphaRing.");
+    AlphaRing::Log::Early("Initialize: Hook done");
     
     result = AlphaRing::Filesystem::Init();
 
-    assertm(result, "failed to initialize filesystem");
+    if (!result) {
+        AlphaRing::Log::Early("Initialize: FAILED Filesystem::Init");
+        return false;
+    }
 
-	//LOG_INFO("Initialized filesystem.");
+    AlphaRing::Log::Early("Initialize: Filesystem done");
 
     result = AlphaRing::Input::Init();
 
-    assertm(result, "failed to initialize input");
+    if (!result) {
+        AlphaRing::Log::Early("Initialize: FAILED Input::Init");
+        LOG_ERROR("Failed to initialize input");
+        return false;
+    }
 
-	//LOG_INFO("Initialized input.");
+    AlphaRing::Log::Early("Initialize: Input done");
 
     result = AlphaRing::Render::Initialize();
 
-    assertm(result, "failed to initialize render");
+    if (!result) {
+        AlphaRing::Log::Early("Initialize: FAILED Render::Initialize");
+        LOG_ERROR("Failed to initialize render");
+        return false;
+    }
 
-	//LOG_INFO("Initialized render.");
+    AlphaRing::Log::Early("Initialize: Render done");
 
     result = MCC::Initialize();
 
-    assertm(result, "failed to initialize mcc");
+    if (!result) {
+        AlphaRing::Log::Early("Initialize: FAILED MCC::Initialize");
+        LOG_ERROR("Failed to initialize MCC");
+        return false;
+    }
 
-	//LOG_INFO("Initialized mcc.");
-
-    //LOG_INFO("Game Version[{}]: {}", AlphaRing::Hook::IsWS() ? "Windows Store" : "Steam", GAME_VERSION);
+    AlphaRing::Log::Early("Initialize: ALL DONE");
+    LOG_INFO("AlphaRing fully initialized.");
 
     return true;
 }
@@ -60,8 +88,10 @@ static bool Shutdown() {
 
 BOOL APIENTRY DllMain(HANDLE handle, DWORD reason, LPVOID reserved) {
     if (reason == DLL_PROCESS_ATTACH) {
+        AlphaRing::Log::Early("DllMain: DLL_PROCESS_ATTACH");
         CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)Initialize, nullptr, 0, nullptr);
     } else if (reason == DLL_PROCESS_DETACH) {
+        AlphaRing::Log::Early("DllMain: DLL_PROCESS_DETACH");
         if (reserved == nullptr)
             return Shutdown();
     }

@@ -3,6 +3,7 @@
 #include "CGameEngine.h"
 
 #include "imgui.h"
+#include <array>
 #include <cstdio>
 
 void CUserProfile::ImGuiContext() {

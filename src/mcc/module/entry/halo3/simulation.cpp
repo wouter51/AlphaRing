@@ -6,12 +6,12 @@
 #include <mutex>
 #include <imgui.h>
 
-static std::mutex g_mutex1;
+static WinMutex g_mutex1;
 static bool bTAS = false;
 static bool bRun = false;
 static int run_tick = 0;
 
-static std::mutex g_mutex;
+static WinMutex g_mutex;
 
 static bool bCapture = false;
 static bool bPlayback = false;
@@ -28,7 +28,7 @@ static void SaveFileHandler();
 namespace Halo3::Entry::Simulation {
     Halo3Entry(entry1, 0xEEFA8/*0xEEC5C*/, __int64, detour1, int tick, float* a2) {
         {
-            std::lock_guard<std::mutex> g_lock(g_mutex1);
+            std::lock_guard<WinMutex> g_lock(g_mutex1);
             if (bTAS) {
                 tick = 0;
                 if (bRun) {
@@ -41,7 +41,7 @@ namespace Halo3::Entry::Simulation {
     }
 
     void ImGuiContext1() {
-        std::lock_guard<std::mutex> g_lock(g_mutex1);
+        std::lock_guard<WinMutex> g_lock(g_mutex1);
 
         ImGui::PushItemWidth(200.0f);
         ImGui::Checkbox("TAS", &bTAS);
@@ -77,7 +77,7 @@ namespace Halo3::Entry::Simulation {
 
             // insert new node
             {
-                std::lock_guard<std::mutex> g_lock(g_mutex);
+                std::lock_guard<WinMutex> g_lock(g_mutex);
                 if (head == nullptr) head = node;
                 if (tail != nullptr) {
                     tail->next = node;
@@ -87,7 +87,7 @@ namespace Halo3::Entry::Simulation {
                 ++total_tick;
             }
         } else if (bPlayback) {
-            std::lock_guard<std::mutex> g_lock(g_mutex);
+            std::lock_guard<WinMutex> g_lock(g_mutex);
             if (current != nullptr) {
                 memcpy(control_data, &current->data, sizeof(unit_control_definition));
                 if (current->next != nullptr) {
@@ -105,7 +105,7 @@ namespace Halo3::Entry::Simulation {
     void ImGuiContext() {
         if (ImGui::CollapsingHeader("Simulation") == false) return;
 
-        std::lock_guard<std::mutex> g_lock(g_mutex);
+        std::lock_guard<WinMutex> g_lock(g_mutex);
 
         auto status = "Idle";
         if (bCapture) status = "Capture";

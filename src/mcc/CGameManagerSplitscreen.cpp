@@ -31,6 +31,9 @@ bool CGameManager::get_xbox_user_id(CGameManager *self, __int64 *pId, wchar_t *p
     if (!p_setting->b_override || !index)
         return ppOriginal.get_xbox_user_id(self, pId, pName, size, index);
 
+    static bool logged = false;
+    if (!logged) { LOG_INFO("Splitscreen get_xbox_user_id: index={}, id={:x}", index, p_profile->id); logged = true; }
+
     if (index >= p_setting->player_count)
         return false;
 
@@ -64,6 +67,12 @@ bool CGameManager::get_key_state(CGameManager *self, DWORD index, input_data_t *
 
     if (!p_profile->b_override)
         return ppOriginal.get_key_state(self, index, p_input);
+
+    static bool logged_once = false;
+    if (!logged_once) {
+        LOG_INFO("Splitscreen get_key_state: player_count={}, index={}", p_profile->player_count, index);
+        logged_once = true;
+    }
 
     if (index >= p_profile->player_count)
         return false;

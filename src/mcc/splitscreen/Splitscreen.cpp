@@ -15,6 +15,9 @@ namespace MCC::Splitscreen {
         if (!p_setting->b_override)
             return ppOriginal_get_index_by_xuid(a1, xuid);
 
+        static bool logged = false;
+        if (!logged) { LOG_INFO("Splitscreen: get_index_by_xuid override, xuid={:x}", xuid); logged = true; }
+
         return CGameManager::get_index(xuid);
     }
 

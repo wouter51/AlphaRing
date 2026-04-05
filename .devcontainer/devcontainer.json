@@ -1,0 +1,22 @@
+{
+    "name": "AlphaRing Cross-Compile (Windows x64)",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools"
+            ],
+            "settings": {
+                "cmake.configureArgs": [
+                    "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/.devcontainer/toolchain-cross-win64.cmake"
+                ],
+                "cmake.generator": "Ninja"
+            }
+        }
+    },
+    "postCreateCommand": "sh .devcontainer/fix-case.sh && echo 'Container ready. Build: cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=.devcontainer/toolchain-cross-win64.cmake -DCMAKE_BUILD_TYPE=Release && cmake --build build'"
+}

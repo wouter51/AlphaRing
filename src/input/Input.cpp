@@ -14,11 +14,15 @@ namespace AlphaRing::Input {
         if ((hModule = GetModuleHandleA("XINPUT1_3.dll")) ||
             (hModule = GetModuleHandleA("XINPUT1_4.dll")) ||
             (hModule = GetModuleHandleA("XINPUT9_1_0.dll"))) {
+            LOG_INFO("XInput module found: {:p}", (void*)hModule);
             g_pXInputGetState = (decltype(g_pXInputGetState))GetProcAddress(hModule, "XInputGetState");
             g_pXInputSetState = (decltype(g_pXInputSetState))GetProcAddress(hModule, "XInputSetState");
         }
 
-        assertm(hModule != nullptr, "failed to find xinput module");
+        if (hModule == nullptr) {
+            LOG_ERROR("Failed to find any XInput module (1_3, 1_4, 9_1_0)");
+            return false;
+        }
 
         return true;
     }

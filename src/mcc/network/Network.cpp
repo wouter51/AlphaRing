@@ -1,7 +1,7 @@
 #include "Network.h"
 
-#include <mutex>
 #include <unordered_map>
+#include <mutex>
 #include <WinSock2.h>
 #include <windows.h>
 #include <winhttp.h>
@@ -9,7 +9,7 @@
 #include "common.h"
 
 namespace MCC::Network {
-    std::mutex mutex;
+    WinMutex mutex;
     bool b_enable_capture;
     std::vector<RequestInfo*> request_list;
     std::unordered_map<HINTERNET, std::wstring> map_url;
@@ -17,7 +17,7 @@ namespace MCC::Network {
 
     void set_url(HINTERNET hConnect, LPCWSTR url) {
         if (!b_enable_capture) return;
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<WinMutex> lock(mutex);
         map_url[hConnect] = url;
     }
 
@@ -26,7 +26,7 @@ namespace MCC::Network {
 
         if (!b_enable_capture) return false;
 
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<WinMutex> lock(mutex);
         auto it = map_request.find(hRequest);
         if (it == map_request.end()) return false;
 
@@ -41,7 +41,7 @@ namespace MCC::Network {
 
         if (!b_enable_capture) return false;
 
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<WinMutex> lock(mutex);
 
         auto it = map_request.find(hRequest);
         if (it == map_request.end()) return false;
@@ -57,7 +57,7 @@ namespace MCC::Network {
 
         if (!b_enable_capture) return false;
 
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<WinMutex> lock(mutex);
         auto it = map_request.find(hRequest);
         if (it == map_request.end()) return false;
 
@@ -69,7 +69,7 @@ namespace MCC::Network {
     }
 
     void clear() {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<WinMutex> lock(mutex);
 
         for (auto request: request_list) {
             delete request;
@@ -85,7 +85,7 @@ namespace MCC::Network {
 
         if (!b_enable_capture) return;
 
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<WinMutex> lock(mutex);
 
         sprintf(buffer, "%ls", method);
 
@@ -110,7 +110,7 @@ namespace MCC::Network {
     }
 
     void close(HINTERNET hRequest) {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<WinMutex> lock(mutex);
 
         auto it = map_request.find(hRequest);
         if (it == map_request.end()) return;

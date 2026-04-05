@@ -117,6 +117,9 @@ namespace AlphaRing::Render::D3d11 {
 
         hD3d11 = GetModuleHandle("d3d11.dll");
 
+        if (hD3d11 == nullptr) {
+            LOG_ERROR("Failed to find module d3d11.dll (error {})", GetLastError());
+        }
         assertm(hD3d11 != nullptr, "failed to find module \"d3d11.dll\"");
 
         p_fD3D11CreateDeviceAndSwapChain = (decltype(p_fD3D11CreateDeviceAndSwapChain)) GetProcAddress(

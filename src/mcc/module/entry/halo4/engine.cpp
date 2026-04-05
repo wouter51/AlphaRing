@@ -5,14 +5,13 @@
 // todo: Scheduler
 namespace Halo4::Entry::Engine {
     void Prologue() {
-        LOG_INFO("Engine Prologue");
         // open access to main thread resources
         // main thread resources will be copied to the render thread
-        Halo4::Native::s_nativeInfo.update("halo4.dll");
+        static __int64 hModule = (__int64)GetModuleHandleA("halo4.dll");
+        Halo4::Native::s_nativeInfo.update(hModule);
     }
 
     void Epilogue() {
-        LOG_INFO("Engine Epilogue");
     }
 
     Halo4Entry(entry, OFFSET_HALO4_PF_ENGINE, void, detour) {
