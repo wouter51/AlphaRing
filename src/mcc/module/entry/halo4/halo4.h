@@ -9,5 +9,5 @@ inline EntrySet* Halo4EntrySet() {return &g_pHalo4EntrySet;};
 #define Halo4Entry(name, offset, returnType, pDetour, ...) \
     returnType pDetour(__VA_ARGS__); \
     typedef returnType (*pDetour##_t)(...); \
-    ::Entry name(Halo4EntrySet(), offset, pDetour); \
+    ::Entry name(Halo4EntrySet(), offset, pDetour, entry_feature); \
     returnType pDetour(__VA_ARGS__)

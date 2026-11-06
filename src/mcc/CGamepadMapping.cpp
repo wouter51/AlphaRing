@@ -1,13 +1,14 @@
 #include "CGamepadMapping.h"
 #include "CGameEngine.h"
 
-static std::array<const char*, 16> button_names {
+static std::array<const char*, 17> button_names {
         "Left Trigger","Right Trigger",
         "Dpad Up","Dpad Down","Dpad Left","Dpad Right",
         "Start","Back",
         "Left Thumb","Right Thumb",
         "Left Shoulder","Right Shoulder",
-        "A","B","X","Y"
+        "A","B","X","Y",
+        "None"  // Unbound
 };
 
 static std::array<const char*, 66> action_names {
@@ -79,31 +80,159 @@ static std::array<const char*, 66> action_names {
         "Select Next Grenades",
 };
 
-const std::array<const char *, 16>* CGamepadMapping::ButtonNames() {return &button_names;}
+const std::array<const char *, 17>* CGamepadMapping::ButtonNames() {return &button_names;}
 
 const std::array<const char *, 66>* CGamepadMapping::ActionNames() {return &action_names;}
 
+void CGamepadMapping::ResetToDefaults() {
+    // Set all to None (unbound) first
+    for (int i = 0; i < 66; i++) {
+        actions[i] = None;
+    }
+
+    // Standard Xbox Halo controls
+    actions[0]  = A;             // Jump
+    actions[1]  = LeftShoulder;  // Switch Grenades
+    actions[2]  = X;             // Action/Interact
+    actions[3]  = RightShoulder; // Reload Right Weapon
+    actions[4]  = Y;             // Change Weapon
+    actions[13] = actions[3];    // Swap/Reload Left Weapon (defaults to Reload Right Weapon)
+    actions[5]  = B;             // Melee
+    actions[6]  = DpadUp;        // Toggle Flashlight
+    actions[7]  = LeftTrigger;   // Throw Grenade
+    actions[49] = actions[7];    // Use Left Weapon
+    actions[28] = actions[7];    // Thrust
+    actions[24] = actions[7];    // Vehicle Function 1
+    actions[8]  = RightTrigger;  // Use Right Weapon (Shoot)
+    actions[9]  = LeftThumb;     // Crouch
+    actions[21] = actions[9];    // Vehicle Function 2
+    actions[10] = RightThumb;    // Player Zoom
+    actions[20] = Back;          // Multiplayer Scoreboard
+    actions[22] = actions[0];    // Vehicle Function 3 (mirrors Jump)
+
+    // Player Move Forward/Backward/Left/Right (H1A) stay unbound — movement is
+    // handled by the analog stick, not the D-Pad.
+    actions[16] = None;
+    actions[17] = None;
+    actions[18] = None;
+    actions[19] = None;
+}
+
 #include <imgui.h>
 #include <cstdio>
+#include "input/Input.h"
+#include "mcc/settings/MenuSettings.h"
 
-void CGamepadMapping::ImGuiContext() {
-    char buffer[10];
+// Detect which button is currently pressed on a controller
+int CGamepadMapping::DetectPressedButton(int controllerIndex) {
+    XINPUT_STATE state;
+    if (!AlphaRing::Input::GetXInputGetState(controllerIndex, &state))
+        return -1;
+
+    // Check triggers first
+    if (state.Gamepad.bLeftTrigger > 30) return CGamepadMapping::LeftTrigger;
+    if (state.Gamepad.bRightTrigger > 30) return CGamepadMapping::RightTrigger;
+
+    // Check buttons
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) return CGamepadMapping::DpadUp;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) return CGamepadMapping::DpadDown;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) return CGamepadMapping::DpadLeft;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) return CGamepadMapping::DpadRight;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_START) return CGamepadMapping::Start;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK) return CGamepadMapping::Back;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB) return CGamepadMapping::LeftThumb;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB) return CGamepadMapping::RightThumb;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) return CGamepadMapping::LeftShoulder;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) return CGamepadMapping::RightShoulder;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) return CGamepadMapping::A;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B) return CGamepadMapping::B;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X) return CGamepadMapping::X;
+    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y) return CGamepadMapping::Y;
+
+    return -1;
+}
+
+
+void CGamepadMapping::ImGuiContext(bool profileActionsHidden) {
+    char buffer[64];
     bool result = false;
+    static int binding_action = -1;  // Which action is being bound (-1 = none)
+    static int binding_controller = 0;  // Which controller to listen to
+
+    // Controller selector for binding
+    ImGui::PushItemWidth(150);
+    ImGui::Combo("Bind Controller", &binding_controller, "Controller 1\0Controller 2\0Controller 3\0Controller 4\0");
+    ImGui::PopItemWidth();
+    ImGui::Separator();
+
+    if (!profileActionsHidden) {
+        if (ImGui::Button("Reset to Defaults")) {
+            ResetToDefaults();
+            result = true;
+        }
+
+        ImGui::Separator();
+    }
+
+    // Check for button press if binding is active
+    if (binding_action >= 0) {
+        int pressed = DetectPressedButton(binding_controller);
+        if (pressed >= 0) {
+            actions[binding_action] = static_cast<CGamepadMapping::eButton>(pressed);
+            if (binding_action == 7) actions[49] = actions[7]; // use left weapon
+            if (binding_action == 7) actions[28] = actions[7]; // thrust
+            if (binding_action == 7) actions[24] = actions[7]; // vehicle function 1
+            if (binding_action == 9) actions[21] = actions[9]; // vehicle function 2
+            if (binding_action == 0) actions[22] = actions[0]; // vehicle function 3
+            binding_action = -1;
+            result = true;
+        }
+    }
 
     for (int i = 0; i < action_names.size(); ++i) {
+        if (profileActionsHidden && AlphaRing::MenuSettings::IsProfileAction(i))
+            continue;
         auto name = action_names.at(i);
         if (name == nullptr) {
-            sprintf(buffer, "Button %d", i);
+            snprintf(buffer, sizeof(buffer), "Action %d", i);
             name = buffer;
         }
 
-        ImGui::PushItemWidth(200);
-        int value = actions[i];
-        if (ImGui::Combo(name, &value, button_names.data(), button_names.size())) {
-            actions[i] = static_cast<CGamepadMapping::eButton>(value);
-            result = true;
+        bool is_binding = (binding_action == i);
+
+        if (is_binding) {
+            // Show binding prompt
+            ImGui::Text("%s:", name);
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Press button...");
+            ImGui::SameLine();
+            snprintf(buffer, sizeof(buffer), "Cancel##%d", i);
+            if (ImGui::Button(buffer)) {
+                binding_action = -1;
+            }
+        } else {
+            // Show current binding with dropdown and bind button
+            ImGui::PushItemWidth(150);
+            // Convert None (-1) to index 16 for dropdown display
+            int value = (actions[i] == CGamepadMapping::None) ? 16 : static_cast<int>(actions[i]);
+            if (ImGui::Combo(name, &value, button_names.data(), button_names.size())) {
+                // Convert index 16 back to None (-1) for storage
+                actions[i] = (value == 16) ? CGamepadMapping::None : static_cast<CGamepadMapping::eButton>(value);
+                if (i == 7) actions[49] = actions[7]; // Use Left Weapon mirrors Throw Grenade
+                if (i == 7) actions[28] = actions[7]; // Thrust mirrors Throw Grenade
+                if (i == 7) actions[24] = actions[7]; // Vehicle Function 1 mirrors Throw Grenade
+                if (i == 9) actions[21] = actions[9]; // Vehicle Function 2 mirrors Crouch
+                if (i == 0) actions[22] = actions[0]; // Vehicle Function 3 mirrors Jump
+                result = true;
+            }
+            ImGui::PopItemWidth();
+
+            ImGui::SameLine();
+            snprintf(buffer, sizeof(buffer), "Bind##%d", i);
+            if (ImGui::Button(buffer) && binding_action < 0) {
+                binding_action = i;
+            }
         }
-        ImGui::PopItemWidth();
     }
 
     if (result) {

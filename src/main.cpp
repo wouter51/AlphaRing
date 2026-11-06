@@ -4,6 +4,7 @@
 #include "hook/Hook.h"
 #include "render/Render.h"
 #include "mcc/mcc.h"
+#include "mcc/settings/MenuSettings.h"
 
 static bool Initialize() {
     bool result;
@@ -14,35 +15,46 @@ static bool Initialize() {
 
     result = AlphaRing::Hook::Initialize();
 
-    assertm(result, "failed to initialize hook");
+    // An MCC build the offsets weren't written for (an update) has them looked
+    // up from patterns (src/offsets); false means one where the executable's
+    // essential offsets can't be found. Install nothing and let the game run
+    // unmodified: assertm stays live in Release builds (common.h), so
+    // asserting here would stop MCC.
+    if (!result) {
+        LOG_ERROR("AlphaRing disabled: unsupported MCC build (see the offset lines above), the game runs unmodified.");
+        return false;
+    }
 
-    //LOG_INFO("Initialized AlphaRing.");
-    
+    LOG_INFO("Initialized hook.");
+
     result = AlphaRing::Filesystem::Init();
 
     assertm(result, "failed to initialize filesystem");
 
-	//LOG_INFO("Initialized filesystem.");
+	LOG_INFO("Initialized filesystem.");
 
     result = AlphaRing::Input::Init();
 
     assertm(result, "failed to initialize input");
 
-	//LOG_INFO("Initialized input.");
+	LOG_INFO("Initialized input.");
+
+    // after Input::Init, which loads the cfg the controller profiles are seeded from
+    AlphaRing::MenuSettings::Initialize();
 
     result = AlphaRing::Render::Initialize();
 
     assertm(result, "failed to initialize render");
 
-	//LOG_INFO("Initialized render.");
+	LOG_INFO("Initialized render.");
 
     result = MCC::Initialize();
 
     assertm(result, "failed to initialize mcc");
 
-	//LOG_INFO("Initialized mcc.");
+	LOG_INFO("Initialized mcc.");
 
-    //LOG_INFO("Game Version[{}]: {}", AlphaRing::Hook::IsWS() ? "Windows Store" : "Steam", GAME_VERSION);
+    LOG_INFO("AlphaRing initialization complete.");
 
     return true;
 }

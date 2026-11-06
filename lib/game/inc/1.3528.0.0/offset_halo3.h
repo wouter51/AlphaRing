@@ -1,26 +1,46 @@
 #pragma once
 
-#define OFFSET_HALO3_PF_DRAW_STRUCTURE 0x280164 //0x27FDB4
-#define OFFSET_HALO3_PF_DRAW_MODEL 0x2B5590 //0x2B51E0
-#define OFFSET_HALO3_PF_ENGINE 0xB2D40 //0xB2A20
-#define OFFSET_HALO3_PF_WORLD 0xEF120 //0xEEDD4
-#define OFFSET_HALO3_PF_MAP 0x42EF8 //0x42EF8
-#define OFFSET_HALO3_PF_RENDER 0x18553C //0x1851EC
+#include "Offset.h"
 
-#define OFFSET_HALO3_PF_BUMP 0x37F828  //0x37F438
+DefOffset(OFFSET_HALO3_PF_DRAW_STRUCTURE, 0x280164) //0x27FDB4
+DefOffset(OFFSET_HALO3_PF_DRAW_MODEL, 0x2B5590) //0x2B51E0
+DefOffset(OFFSET_HALO3_PF_ENGINE, 0xB2D40) //0xB2A20
+DefOffset(OFFSET_HALO3_PF_WORLD, 0xEF120) //0xEEDD4
+DefOffset(OFFSET_HALO3_PF_MAP, 0x42EF8) //0x42EF8
+DefOffset(OFFSET_HALO3_PF_RENDER, 0x18553C) //0x1851EC
 
-#define OFFSET_HALO3_PF_COOP_JOIN 0x11DF8 //0x11DF8
-#define OFFSET_HALO3_PF_OBJECT_CHANGE_COLOR 0x28B960 //0x28B5B0
+DefOffset(OFFSET_HALO3_PF_BUMP, 0x37F828)  //0x37F438
 
-#define OFFSET_HALO3_PF_PLAYER_PUSH_MESSAGE 0x2D4C34 //0x2D4884
-#define OFFSET_HALO3_PF_PLAYER_POSSESS 0xE3748 //0xE33FC
-#define OFFSET_HALO3_PF_PLAYERS_CONTROL_CAMERA 0x1313C8 //0x131078
+DefOffset(OFFSET_HALO3_PF_COOP_JOIN, 0x11DF8) //0x11DF8
+DefOffset(OFFSET_HALO3_PF_OBJECT_CHANGE_COLOR, 0x28B960) //0x28B5B0
+
+DefOffset(OFFSET_HALO3_PF_PLAYER_PUSH_MESSAGE, 0x2D4C34) //0x2D4884
+DefOffset(OFFSET_HALO3_PF_PLAYER_POSSESS, 0xE3748) //0xE33FC
+DefOffset(OFFSET_HALO3_PF_PLAYERS_CONTROL_CAMERA, 0x1313C8) //0x131078
+
+#define OFFSET_HALO3_DAT_SKINNING_POOL 0x4680DC4
+#define OFFSET_HALO3_PF_SKINNING_POOL_ALLOCATE 0x2A84F8
 
 
-#define OFFSET_HALO3_PV_TAG_NAMES 0xA49148//0xA48148
-#define OFFSET_HALO3_PV_ENABLE_INPUT 0x20AD061//0x20AC061
-#define OFFSET_HALO3_PV_GLOBAL_VARIABLE 0x2D3ED70//0x2D3DD70
-#define OFFSET_HALO3_PV_OBJECT_INFOS 0x815160//0x814050
+DefOffset(OFFSET_HALO3_PV_TAG_NAMES, 0xA49148)//0xA48148
+DefOffset(OFFSET_HALO3_PV_ENABLE_INPUT, 0x20AD061)//0x20AC061
+DefOffset(OFFSET_HALO3_PV_GLOBAL_VARIABLE, 0x2D3ED70)//0x2D3DD70
+DefOffset(OFFSET_HALO3_PV_OBJECT_INFOS, 0x815160)//0x814050
+DefOffset(OFFSET_HALO3_PV_LOG, 0xA49170) /*0xA48170*/ // the recent log lines, {char title[0x100], content[0x200]}[0x20]
+DefOffset(OFFSET_HALO3_PV_TAG_SALTS, 0xA49018) /*0xA48018*/ // tag instances*: {int16 group index, int16 salt, int32 address}
+DefOffset(OFFSET_HALO3_PV_TAGS_HEADER, 0x20AD058) /*0x20AC058*/ // tags_header*: +0 group count, +8 groups[16], +0x10 tag count, +0x18 instances[8]
+
+DefOffset(OFFSET_HALO3_PF_LOG_FORMAT, 0xB3F3C) /*0xB3C1C*/ // char* (char* header, char* format, data1, data2) - a log line's text (halo3/log.cpp)
+DefOffset(OFFSET_HALO3_PF_SIMULATION_TICKS, 0xEEFA8) /*0xEEC5C*/ // (int ticks, float*) - the ticks the simulation runs this frame (halo3/simulation.cpp)
+DefOffset(OFFSET_HALO3_PF_UNIT_CONTROL, 0x350ED4) /*0x350B24*/ // (unsigned short unit, unit_control_definition*) - a unit's input for the tick
+
+// Halo3::Native::Function::object_create
+DefOffset(OFFSET_HALO3_PF_OBJECT_PLACEMENT_DATA_NEW, 0x341508) // (data*, int tag, int owner_object, damage_owner*)
+DefOffset(OFFSET_HALO3_PF_OBJECT_NEW, 0x341AE8) // int (data*)
+DefOffset(OFFSET_HALO3_PF_OBJECT_POST_CREATE, 0x1EA04) // (int object) - called by the engine after object_new
+
+// c_splitscreen_config::m_config_table; the black-bar patches rewrite entries 8, 9 and 12 (0x8AE150, 0x8AE164, 0x8AE1A0)
+DefOffset(OFFSET_HALO3_PV_SPLITSCREEN_TABLE, 0x8AE0B0)//0x8AD0C0
 
 struct halo3_teb_data_definition {
     void* zero;

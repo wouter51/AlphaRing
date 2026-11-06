@@ -1,0 +1,12 @@
+[submodule "dep/imgui"]
+	path = dep/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "dep/libmcc"]
+	path = dep/libmcc
+	url = https://github.com/SpringContingency/libmcc.git
+[submodule "dep/spdlog"]
+	path = dep/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "dep/json"]
+	path = dep/json
+	url = https://github.com/nlohmann/json.git

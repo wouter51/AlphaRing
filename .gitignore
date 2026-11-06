@@ -1,5 +1,8 @@
-cmake-build-release/
-cmake-build-debug/
-.idea/
+.vs/
 build/
-/.vs
+out/
+dep/
+vcpkg/
+vcpkg_installed/
+.claude/
+__pycache__/

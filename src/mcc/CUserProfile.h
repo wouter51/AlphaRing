@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 struct CUserProfile {
     bool SubtitleSetting; // 0x0
     bool SubtitleSizeSetting; // 0x1
@@ -68,8 +70,8 @@ struct CUserProfile {
     struct Skin_t { int object; int skin; } Skins[32]; // 0xAC
     wchar_t ServiceTag[4]; // 0x1AC
     bool OnlineMedalFlasher; // 0x1B4
-    bool VerticalLookSensitivity; // 0x1B5
-    bool HorizontalLookSensitivity; // 0x1B6
+    unsigned char VerticalLookSensitivity; // 0x1B5
+    unsigned char HorizontalLookSensitivity; // 0x1B6
     bool LookAcceleration; // 0x1B7
     float LookAxialDeadZone; // 0x1B8
     float LookRadialDeadZone; // 0x1BC
@@ -148,8 +150,20 @@ struct CUserProfile {
     int RemasteredHUDSetting; // 0xAC4
     float HUDScale; // 0xAC8
 
+    // Everything but the armor, which the advanced menu keeps per game (see
+    // ArmorImGuiContext).
     void ImGuiContext();
     static const char* CustomizationItemName(int index);
+
+    // The game a customization item belongs to, from its name.
+    enum eItemGame { ItemReach, ItemCE, ItemHalo2, ItemHalo2A, ItemHalo3, ItemODST, ItemHalo4, ItemOther, ItemGameCount };
+    static eItemGame CustomizationItemGame(int index);
+
+    // Pickers for the armor, voice and pose fields that `game` has items for,
+    // each offering only that game's items or "None" (-1). `slot` gives the
+    // value a field's picker edits, or null to leave the field out. True if
+    // one changed.
+    static bool ArmorImGuiContext(eItemGame game, const std::function<int*(int CUserProfile::*)>& slot);
 };
 
 static_assert(sizeof(CUserProfile) == 0xACC);
