@@ -1,3 +1,22 @@
+# AlphaRing — Xbox Game Pass (PC) build
+
+> **Status: untested on Game Pass.** Builds cleanly; not yet run on a Game Pass copy of MCC. Use with the
+> official **"Halo: MCC Anti-Cheat Disabled"** launch only — offline/modded mode, no online play.
+
+Fork of [wouter51/AlphaRing](https://github.com/wouter51/AlphaRing) (MCC 1.3528.0.0 update), itself a fork of
+[WinterSquire/AlphaRing](https://github.com/WinterSquire/AlphaRing). MIT licence, all credit to them.
+
+What this fork adds:
+- **Game Pass offset remap without rebuilding:** put `alpha_ring/offsets_ws.txt` next to `patch.xml` with
+  `version=<your MCCWinStore exe version>` and `0xOLD=0xNEW` lines for any Store offsets that moved
+  (main exe offsets only).
+- **Build on a Mac:** `tools/mac-build/build.sh` cross-compiles the DLL with clang-cl + xwin (setup in the script).
+
+Install: copy `WTSAPI32.dll` to `<game>\MCC\Binaries\Win64\` and `res/*` to `<game>\alpha_ring\`, then launch
+"Halo: MCC Anti-Cheat Disabled (Mods and Limited Services)". F4 opens the overlay.
+
+---
+
 ## Alpha Ring
 A Modding Tool for MCC
 
