@@ -93,8 +93,7 @@ namespace AlphaRing::Hook {
         if ((version = FileVersion(hModule)) != FileVersion::fromString(GAME_VERSION)) {
             if (distro == WindowsStore)
             {
-				if (version == FileVersion::fromString("1.3498.0.0") ||
-                    (!ws_version.empty() && version != FileVersion::fromString("") &&
+				if ((!ws_version.empty() && version != FileVersion::fromString("") &&
                      version == FileVersion::fromString(ws_version.c_str()))) {
                     LOG_INFO("Game Pass version {} accepted", version.toString());
 					return true;
@@ -102,8 +101,8 @@ namespace AlphaRing::Hook {
             }
 
             if (distro == WindowsStore) {
-                // Store offsets survived Steam 1.3495 -> 1.3528 unchanged; let the player try an unlisted build.
-                sprintf(buffer, "Game Pass MCC version %s is not verified (known: 1.3498.0.0).\n"
+                // Unlisted Game Pass build: let the player try; offsets_ws.txt can fix it without a rebuild.
+                sprintf(buffer, "Game Pass MCC version %s is not verified (known: " GAME_VERSION ").\n"
                                 "Try anyway? If it crashes, add version=%s and fixed offsets to alpha_ring\\offsets_ws.txt.",
                         version.toString().c_str(), version.toString().c_str());
                 if (MessageBoxA(nullptr, buffer, "AlphaRing", MB_YESNO | MB_ICONWARNING) == IDYES) {

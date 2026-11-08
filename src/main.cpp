@@ -18,6 +18,7 @@ static void LoadSplitscreenFile() {
     std::string line;
     while (std::getline(in, line)) {
         int n;
+        if (line.rfind("\xEF\xBB\xBF", 0) == 0) line.erase(0, 3); // Notepad BOM
         if (sscanf_s(line.c_str(), " players = %d", &n) == 1 && n >= 1 && n <= 4) {
             auto s = AlphaRing::Global::MCC::Splitscreen();
             s->b_override = true;
