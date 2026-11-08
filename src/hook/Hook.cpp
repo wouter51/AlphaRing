@@ -31,13 +31,24 @@ namespace AlphaRing::Hook {
         GetModuleFileNameA(nullptr, exe, MAX_PATH);
         auto path = std::filesystem::path(exe).parent_path() / "../../../alpha_ring/offsets_ws.txt";
         std::ifstream in(path);
+        if (!in) { LOG_INFO("offsets_ws.txt not found ({})", path.string()); return; }
+        auto trim = [](std::string s) {
+            if (s.rfind("\xEF\xBB\xBF", 0) == 0) s.erase(0, 3); // Notepad BOM
+            auto b = s.find_first_not_of(" \t\r\n"), e = s.find_last_not_of(" \t\r\n");
+            return b == std::string::npos ? std::string() : s.substr(b, e - b + 1);
+        };
         std::string line;
         while (std::getline(in, line)) {
+            line = trim(line);
             auto eq = line.find('=');
             if (line.empty() || line[0] == '#' || eq == std::string::npos) continue;
-            auto key = line.substr(0, eq), val = line.substr(eq + 1);
-            while (!val.empty() && isspace((unsigned char)val.back())) val.pop_back();
-            if (key == "version") { ws_version = val; continue; }
+            auto key = trim(line.substr(0, eq)), val = trim(line.substr(eq + 1));
+            if (key == "version") {
+                int a, b, c, d;
+                if (sscanf_s(val.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) == 4) ws_version = val;
+                else LOG_WARNING("offsets_ws.txt: bad version '{}'", val);
+                continue;
+            }
             try { ws_override[std::stoll(key, nullptr, 16)] = std::stoll(val, nullptr, 16); } catch (...) {}
         }
         LOG_INFO("offsets_ws.txt: {} overrides, version '{}'", ws_override.size(), ws_version);
@@ -81,10 +92,22 @@ namespace AlphaRing::Hook {
             if (distro == WindowsStore)
             {
 				if (version == FileVersion::fromString("1.3498.0.0") ||
-                    (!ws_version.empty() && version == FileVersion::fromString(ws_version.c_str())))
+                    (!ws_version.empty() && version != FileVersion::fromString("") &&
+                     version == FileVersion::fromString(ws_version.c_str())))
 					return true;
             }
 
+            if (distro == WindowsStore) {
+                // Store offsets survived Steam 1.3495 -> 1.3528 unchanged; let the player try an unlisted build.
+                sprintf(buffer, "Game Pass MCC version %s is not verified (known: 1.3498.0.0).\n"
+                                "Try anyway? If it crashes, add version=%s and fixed offsets to alpha_ring\\offsets_ws.txt.",
+                        version.toString().c_str(), version.toString().c_str());
+                if (MessageBoxA(nullptr, buffer, "AlphaRing", MB_YESNO | MB_ICONWARNING) == IDYES) {
+                    LOG_WARNING("Unverified Game Pass version {}", version.toString());
+                    return true;
+                }
+                return false;
+            }
             sprintf(buffer, "Version mismatch [%s]:%s", GAME_VERSION, version.toString().c_str());
             MessageBoxA(nullptr, buffer, "Error", MB_OK);
             return false;
