@@ -56,7 +56,9 @@ namespace AlphaRing::Hook {
 
     static __int64 WS(__int64 offset) {
         auto it = ws_override.find(offset);
-        return it == ws_override.end() ? offset : it->second;
+        if (it == ws_override.end()) return offset;
+        LOG_INFO("Game Pass offset remapped 0x{:X} -> 0x{:X}", offset, it->second);
+        return it->second;
     }
 
     bool IsWS() {
@@ -93,8 +95,10 @@ namespace AlphaRing::Hook {
             {
 				if (version == FileVersion::fromString("1.3498.0.0") ||
                     (!ws_version.empty() && version != FileVersion::fromString("") &&
-                     version == FileVersion::fromString(ws_version.c_str())))
+                     version == FileVersion::fromString(ws_version.c_str()))) {
+                    LOG_INFO("Game Pass version {} accepted", version.toString());
 					return true;
+                }
             }
 
             if (distro == WindowsStore) {
