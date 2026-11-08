@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include "CModule.h"
+#include "common.h"
 
 CModule::CModule(EntrySet *entrySet, std::initializer_list<CPatch> patches)
 : m_entries(entrySet), m_patches(patches) {};
@@ -8,6 +9,7 @@ void CModule::load_module(const module_info_t *p_info) {
     if (p_info == nullptr) return;
 
     m_info = *p_info;
+    LOG_INFO("module load: title={} hModule=0x{:X} error={}", m_info.title, m_info.hModule, m_info.errorCode);
 
     if (m_info.hModule == 0 || m_info.errorCode != 0) return;
 
