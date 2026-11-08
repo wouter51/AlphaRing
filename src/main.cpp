@@ -25,6 +25,12 @@ static void LoadSplitscreenFile() {
             AlphaRing::Global::Global()->show_imgui = false;
             LOG_INFO("splitscreen.txt: {} players, override on", n);
         }
+        if (sscanf_s(line.c_str(), " controllers = %d", &n) == 1 && n == 4) {
+            auto s = AlphaRing::Global::MCC::Splitscreen();
+            s->b_player0_use_km = false;
+            s->b_controller_per_player = true;
+            LOG_INFO("splitscreen.txt: 4 controllers, player N uses controller N, keyboard off");
+        }
     }
 }
 
