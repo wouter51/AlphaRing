@@ -39,6 +39,7 @@ namespace AlphaRing::Global {
 
             // player 0
             bool b_player0_use_km = true;
+            bool b_controller_per_player = false; // player N -> controller N (set by splitscreen.txt controllers=4)
             bool b_override_profile = false;
             bool b_use_player0_profile = true;
         };

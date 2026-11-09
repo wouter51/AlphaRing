@@ -1,0 +1,3 @@
+# AlphaRing splitscreen settings (read at game start). Remove the leading # to enable a line.
+# players=4      start with N-player splitscreen (1-4) without opening the F4 overlay
+# controllers=4  player N uses controller N, keyboard/mouse off (use when 4 controllers are connected)

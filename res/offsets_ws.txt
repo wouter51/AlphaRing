@@ -1,0 +1,2 @@
+# Game Pass (Windows Store) MCC offset remap. Lines: version=<MCC exe file version> and 0xOLD=0xNEW.
+# Empty = use the built-in Game Pass offsets (made for Store MCC 1.3528.0.0).

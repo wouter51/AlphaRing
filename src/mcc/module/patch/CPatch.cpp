@@ -1,6 +1,7 @@
 #include "CPatch.h"
 #include "CPatchSet.h"
 #include <Windows.h>
+#include "common.h"
 
 bool CPatch::apply(void *dst, const void *src, size_t size, void *backup)  {
     bool result = false;
@@ -28,6 +29,10 @@ bool CPatch::setState(bool state) {
 
 bool CPatch::apply()  {
     auto dst = (void*)(m_parent->moduleAddress() + m_offset);
+    if (m_enabled && m_parent->moduleAddress()) {
+        auto b = (unsigned char*)dst;
+        LOG_INFO("patch '{}' at +0x{:X}: was {:02X} {:02X} {:02X} {:02X} {:02X} {:02X}", m_name, m_offset, b[0], b[1], b[2], b[3], b[4], b[5]);
+    }
     if (m_enabled)
         return apply(dst, m_data.data(), m_data.size(), m_backup.data());
     else

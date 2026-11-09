@@ -80,9 +80,11 @@ namespace AlphaRing::Render::ImGui {
 
 
         if (inGame && pGameGlobal != nullptr) {
-            if (pGameGlobal->current_game != 0)
+            // current_game is read from game memory; during shutdown it can be garbage (crashed on quit).
+            auto game = pGameGlobal->current_game;
+            if (game > 0 && game < (int)(sizeof(pages) / sizeof(pages[0])))
             {
-                auto context = pages[pGameGlobal->current_game];
+                auto context = pages[game];
                 if (context != nullptr)
                     context->render();
             }
